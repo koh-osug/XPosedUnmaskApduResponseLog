@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
@@ -26,19 +27,40 @@ public class UnmaskApduResponseLog implements IXposedHookLoadPackage {
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
         Log.d(TAG, String.format("Loaded: %s", lpparam.packageName));
+// TODO:        this is just for the eUICC, remove if the latter more genral one is doing the job
+        // https://cs.android.com/android/platform/superproject/+/master:frameworks/opt/telephony/src/java/com/android/internal/telephony/uicc/euicc/apdu/TransmitApduLogicalChannelInvocation.java;l=67?q=TransmitApduLogicalChannelInvocation&ss=android
+//        XposedHelpers.findAndHookMethod(
+//                "com.android.internal.telephony.uicc.euicc.apdu.TransmitApduLogicalChannelInvocation",
+//                lpparam.classLoader,"parseResult",
+//                Class.forName("android.os.AsyncResult"),
+//                new XC_MethodHook() {
+//
+//                    @Override
+//                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+//                        //  first param is android.os.AsyncResult which result field is an
+//                        // IccIoResult
+//                        Field iccIoResultField = XposedHelpers.findField(param.args[0].getClass(), "result");
+//                        iccIoResultField.setAccessible(true);
+//                        Object iccIoResult = iccIoResultField.get(param.args[0]);
+//                        Field payloadField = XposedHelpers.findField(iccIoResult.getClass(), "payload");
+//                        payloadField.setAccessible(true);
+//                        byte[] data = (byte[]) payloadField.get(iccIoResult);
+//                        if (data != null && data.length > 0) {
+//                            Method verboseRlog = Class.forName("android.telephony.Rlog").getDeclaredMethod("v", String.class, String.class);
+//                            verboseRlog.invoke(null, TAG, String.format(
+//                                    "IccIoResult unmasked Payload: %s", byteArrayToHexString(data)));
+//                        }
+//                    }
+//                });
+//        https://cs.android.com/android/platform/superproject/+/master:frameworks/opt/telephony/src/java/com/android/internal/telephony/uicc/IccIoResult.java;drc=master;l=187
         XposedHelpers.findAndHookMethod(
-                "com.android.internal.telephony.uicc.euicc.apdu.TransmitApduLogicalChannelInvocation",
-                lpparam.classLoader,"parseResult",
-                Class.forName("android.os.AsyncResult"),
+                "com.android.internal.telephony.uicc.IccIoResult",
+                lpparam.classLoader,"toString",
                 new XC_MethodHook() {
 
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                        //  first param is android.os.AsyncResult which result field is an
-                        // IccIoResult
-                        Field iccIoResultField = XposedHelpers.findField(param.args[0].getClass(), "result");
-                        iccIoResultField.setAccessible(true);
-                        Object iccIoResult = iccIoResultField.get(param.args[0]);
+                        Object iccIoResult = param.thisObject;
                         Field payloadField = XposedHelpers.findField(iccIoResult.getClass(), "payload");
                         payloadField.setAccessible(true);
                         byte[] data = (byte[]) payloadField.get(iccIoResult);
@@ -49,6 +71,7 @@ public class UnmaskApduResponseLog implements IXposedHookLoadPackage {
                         }
                     }
                 });
+
     }
 
     /**

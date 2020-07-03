@@ -1,6 +1,6 @@
 # Summary
 
-Unmask the APDU response payloads masked in the radio log in Android Pie.
+Unmask the eUICC APDU response payloads masked in the radio log in Android Pie.
 
 Usually the payload should be masked (`logcat -b radio *:V`):
 
@@ -17,4 +17,4 @@ After the module is installed an additional an additional line is printed:
 * Enabled it in EdXposed Manager
 * Reboot
 
-__NOTE:__ After an update of the module the moduel must be disabled an re-enabled and the device rebooted. 
+__NOTE:__ After an update of the module the module must be disabled an re-enabled and the device rebooted. 
