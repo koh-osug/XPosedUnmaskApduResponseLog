@@ -83,7 +83,7 @@ public class UnmaskApduResponseLog implements IXposedHookLoadPackage {
 
                         @Override
                         protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                            if (param.args[1].getClass().equals(Class.forName("com.android.phone.PhoneInterfaceManager$IccAPDUArgument"))) {
+                            if (param.args[1] != null && param.args[1].getClass().equals(Class.forName("com.android.phone.PhoneInterfaceManager$IccAPDUArgument"))) {
 //                            public int channel, cla, command, p1, p2, p3;
 //                            public String data;
                                 String apduString = "ApduCommand(channel=" + XposedHelpers.getIntField(param.args[1], "channel")
