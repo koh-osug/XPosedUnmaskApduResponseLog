@@ -157,6 +157,108 @@ public class UnmaskApduResponseLog implements IXposedHookLoadPackage {
                     }
                 });
 
+//        http://aosp.opersys.com/xref/android-11.0.0_r33/xref/frameworks/opt/telephony/src/java/com/android/internal/telephony/RIL.java#4159
+        XposedHelpers.findAndHookMethod(
+                "com.android.internal.telephony.RIL",
+                lpparam.classLoader, "iccOpenLogicalChannel",
+                String.class,
+                int.class,
+                Message.class,
+                new XC_MethodHook() {
+
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        Method verboseRlog = Class.forName("android.telephony.Rlog").getDeclaredMethod("v", String.class, String.class);
+                        verboseRlog.invoke(null, TAG, String.format(
+                                "RIL iccOpenLogicalChannel: %s", param.args[0]));
+                    }
+                });
+        XposedHelpers.findAndHookMethod(
+                "com.android.internal.telephony.RIL",
+                lpparam.classLoader, "iccCloseLogicalChannel",
+                int.class,
+                Message.class,
+                new XC_MethodHook() {
+
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        Method verboseRlog = Class.forName("android.telephony.Rlog").getDeclaredMethod("v", String.class, String.class);
+                        verboseRlog.invoke(null, TAG, String.format(
+                                "RIL iccCloseLogicalChannel: %d", (int)param.args[0]));
+                    }
+                });
+        XposedHelpers.findAndHookMethod(
+                "com.android.internal.telephony.RIL",
+                lpparam.classLoader, "iccTransmitApduLogicalChannel",
+                int.class,
+                int.class,
+                int.class,
+                int.class,
+                int.class,
+                int.class,
+                String.class,
+                Message.class,
+                new XC_MethodHook() {
+
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        String apduString = "ApduCommand(channel=" + param.args[0]
+                                + ", cla=" + Integer.toHexString((Integer) param.args[1])
+                                + ", ins=" + Integer.toHexString((Integer) param.args[2])
+                                + ", p1=" + Integer.toHexString((Integer) param.args[3])
+                                + ", p2=" + Integer.toHexString((Integer) param.args[4])
+                                + ", p3=" + Integer.toHexString((Integer) param.args[5])
+                                + ", cmd=" + param.args[6] + ")";
+                        Method verboseRlog = Class.forName("android.telephony.Rlog").getDeclaredMethod("v", String.class, String.class);
+                        verboseRlog.invoke(null, TAG, String.format(
+                                "RIL iccTransmitApduLogicalChannel: %s", apduString));
+                    }
+                });
+        // http://aosp.opersys.com/xref/android-11.0.0_r33/xref/packages/apps/SecureElement/src/com/android/se/SecureElementService.java#235
+//        XposedHelpers.findAndHookMethod(
+//                "com.android.se.SecureElementService$SecureElementSession",
+//                lpparam.classLoader, "openLogicalChannel",
+//                String.class,
+//                byte.class,
+//                Class.forName("android.se.omapi.ISecureElementListener"),
+//                new XC_MethodHook() {
+//
+//                    @Override
+//                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+//                        Method verboseRlog = Class.forName("android.telephony.Rlog").getDeclaredMethod("v", String.class, String.class);
+//                        verboseRlog.invoke(null, TAG, String.format(
+//                                "SecureElementService$SecureElementSession openLogicalChannel: %s", param.args[0]));
+//                    }
+//                });
+
+        // http://aosp.opersys.com/xref/android-11.0.0_r33/xref/packages/apps/SecureElement/src/com/android/se/Terminal.java#393
+
+//        XposedHelpers.findAndHookMethod(
+//                "com.android.se.Terminal",
+//                lpparam.classLoader, "select",
+//                byte[].class,
+//                new XC_MethodHook() {
+//
+//                    @Override
+//                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+//                        Method verboseRlog = Class.forName("android.telephony.Rlog").getDeclaredMethod("v", String.class, String.class);
+//                        verboseRlog.invoke(null, TAG, String.format(
+//                                "Terminal select: %s", byteArrayToHexString((byte[]) param.args[0])));
+//                    }
+//                });
+//        XposedHelpers.findAndHookMethod(
+//                "com.android.se.Terminal",
+//                lpparam.classLoader, "transmit",
+//                byte[].class,
+//                new XC_MethodHook() {
+//
+//                    @Override
+//                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+//                        Method verboseRlog = Class.forName("android.telephony.Rlog").getDeclaredMethod("v", String.class, String.class);
+//                        verboseRlog.invoke(null, TAG, String.format(
+//                                "Terminal transmit: %s", byteArrayToHexString((byte[]) param.args[0])));
+//                    }
+//                });
     }
 
     /**
